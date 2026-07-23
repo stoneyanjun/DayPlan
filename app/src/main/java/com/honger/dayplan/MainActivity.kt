@@ -16,6 +16,7 @@ import com.honger.dayplan.ui.theme.DayPlanTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        testValVar(increaseCount = 110)
         enableEdgeToEdge()
         setContent {
             DayPlanTheme {
@@ -36,6 +37,28 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier
     )
+}
+
+fun testValVar(increaseCount: Int = 100) {
+    var count = 0
+    for (i in 0..10) {
+        if (count > 100) {
+            break
+        } else {
+            count += increaseCount
+        }
+    }
+    val labelText = countLabel(count = 101) ?: "so far"
+    println("count: $count $labelText")
+}
+
+fun countLabel(count: Int): String? {
+    return when(count) {
+        0 -> "zero"
+        1 -> "one"
+        10 -> "ten"
+        else -> null
+    }
 }
 
 @Preview(showBackground = true)

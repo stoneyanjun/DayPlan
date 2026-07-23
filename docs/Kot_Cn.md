@@ -77,14 +77,29 @@
 
 ### 推荐工程包结构（Day 6 起采用）
 
+Android Studio 默认的 **Android** 项目视图会把真实目录 `app/src/main/java` 显示成 `kotlin+java`，并把 `androidTest`、`test` 单独分组。下面写的是磁盘上的真实路径；在截图中的 `com.honger.dayplan` 包下面创建这些子包。
+
 ```text
-app/src/main/java/.../
+app/src/main/java/com/honger/dayplan/
   ui/connection/     # Screen + 小组件
+  ui/theme/          # Compose 主题；新建项目已自带
   presentation/      # ViewModel、UiState、UiEvent
   domain/            # model、repository 接口、use case
   data/              # Fake / 真实 repository、DTO、mapper
   di/                # 可选：手工 factory；Hilt 放后期
 ```
+
+在 Android Studio 里操作时，可以按下面步骤做：
+
+1. 确认左侧 Project 面板处于 **Android** 视图。
+2. 展开 `app > kotlin+java > com.honger.dayplan`。
+3. 右键 `com.honger.dayplan`，选择 **New > Package**。
+4. 输入 `ui.connection`，回车。Android Studio 会创建真实目录 `app/src/main/java/com/honger/dayplan/ui/connection/`。
+5. 同样右键 `com.honger.dayplan`，依次创建 `presentation`、`domain`、`data`、`di`。
+6. `ui.theme` 是新建 Compose 项目通常已经自带的包；如果已经存在，不需要重复创建。
+7. 新建 Kotlin 文件时放到对应包里，并确认文件顶部的 `package` 声明匹配，例如 `ui.connection` 下的文件应是 `package com.honger.dayplan.ui.connection`。
+
+也就是说，“包”和“目录”在这里是一一对应的：推荐用 **New > Package** 创建，因为它符合 Kotlin / Java 的包语义；直接在磁盘上创建目录也可以，但之后文件顶部的 `package` 声明必须写对。
 
 依赖方向：**ui → presentation → domain ← data**。domain 不依赖 Android、Compose、Bluetooth API。
 
@@ -160,6 +175,60 @@ Day X 输出
 - 模拟器上能看到默认 Compose 页面。
 - 能用自己的话画出“Activity -> Compose UI -> ViewModel -> domain / data”的粗略图。
 - 能说出 minSdk / targetSdk 各影响什么（权限、API 可用性、商店要求等方向即可）。
+
+### 粗略架构图：Activity -> Compose UI -> ViewModel -> domain / data
+
+先把它理解成一条“用户事件向下走，页面状态向上回”的链路：
+
+```mermaid
+flowchart TD
+    Activity["MainActivity<br/>Android 入口 / 生命周期宿主"]
+    Compose["Compose UI<br/>Screen + Composable 小组件"]
+    ViewModel["ConnectionViewModel<br/>持有 UiState，处理 UiEvent"]
+    UseCase["domain use case<br/>ConnectDevice / ObserveDevices"]
+    DomainModel["domain model<br/>GlassesDevice / ConnectionState"]
+    Repository["domain repository 接口<br/>GlassesRepository"]
+    FakeRepo["data repository 实现<br/>FakeGlassesRepository / 未来真实 BLE"]
+    Mapper["data mapper<br/>DTO -> domain model"]
+    External["外部来源<br/>Fake 数据 / BLE SDK / 网络 / 本地缓存"]
+
+    Activity --> Compose
+    Compose -- "用户点击、重试、断开" --> ViewModel
+    ViewModel -- "调用业务动作" --> UseCase
+    UseCase -. "使用业务类型" .-> DomainModel
+    UseCase --> Repository
+    Repository -. "接口由 data 层实现" .-> FakeRepo
+    Repository -. "返回领域类型" .-> DomainModel
+    FakeRepo -- "读取 / 订阅" --> External
+
+    External -- "原始数据 / 连接结果" --> Mapper
+    Mapper -- "可信领域模型" --> FakeRepo
+    FakeRepo -- "Flow / suspend 返回" --> Repository
+    Repository --> UseCase
+    UseCase --> ViewModel
+    ViewModel -- "StateFlow<UiState>" --> Compose
+    Compose -- "根据 state 重组" --> Activity
+```
+
+每层先记住这几个职责：
+
+| 层 | 主要职责 | 不应该做什么 |
+|---|---|---|
+| Activity | 创建 Android 窗口，调用 `setContent`，承接生命周期、权限结果等 Android 入口事件 | 不直接写业务规则，不保存复杂屏幕状态 |
+| Compose UI | 把 `UiState` 画出来，把点击等用户意图交给 ViewModel | 不直接请求 BLE / 网络，不在函数体里启动不受控副作用 |
+| ViewModel | 把 UI 事件转换成业务调用，收集 Flow，暴露稳定的 `StateFlow<UiState>` | 不持有 Activity Context、View、Composable；不把 DTO 暴露给 UI |
+| domain | 定义业务语言：领域模型、repository 接口、use case、错误类型 | 不依赖 Android、Compose、Bluetooth SDK 或 Retrofit |
+| data | 实现 domain 需要的数据能力：fake、BLE、网络、本地缓存、DTO mapper | 不把外部 API 的脏数据直接漏到 domain / UI |
+
+这张图里有两个方向要分清：
+
+- **事件向下**：用户点击 Compose 按钮，Compose 调用 `viewModel.connect(deviceId)`；ViewModel 再调用 use case / repository。
+- **状态向上**：data 层拿到连接状态，经过 mapper 和 domain 规则后，通过 Flow / suspend 回到 ViewModel；ViewModel 更新 `UiState`，Compose 因 state 改变而重组。
+- **依赖方向**：`ui -> presentation -> domain <- data`。`domain` 是中间的业务核心，应该最干净；`data` 依赖 domain 的接口并提供实现，而不是让 domain 反过来认识 BLE 或数据库。
+- **对象边界**：UI 层使用 `UiState`，业务层使用 `GlassesDevice`、`ConnectionState` 这类领域模型，data 层才处理 DTO、SDK callback、权限细节和 mapper。
+- **生命周期边界**：Activity 可能因旋转重建；ViewModel 通常能跨配置变更保留；进程死亡则需要 `SavedStateHandle`、本地缓存或重新拉取数据，不能只靠 ViewModel。
+
+可以用一句话口述这条链路：`Activity` 只是把 Compose 放到屏幕上；Compose 负责显示和上报用户意图；ViewModel 负责把意图变成状态；domain 负责表达业务规则；data 负责把 fake / BLE / 网络这些外部世界翻译成 domain 能相信的数据。
 
 ---
 

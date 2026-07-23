@@ -1,21 +1,21 @@
-# Kotlin + Native Android: A 10-Day Accelerated Plan for iOS / Swift Engineers (Smart-Glasses Track)
+# KOT +  ANDR: A 10-DA Accelerated Plan for Swift Engineers (SG Track)
 
-> **Time convention:** Day 0 is a 1–2 hour environment preflight. Complete it before the plan; it is **not counted** as one of the ten days. Plan 2–3 hours for each of Days 1–10.  
-> **Stack:** Kotlin, Jetpack Compose, ViewModel, StateFlow, Coroutines / Flow, and a replaceable Fake Repository.  
+> **Time convention:** DA 0 is a 1–2 hour environment preflight. Complete it before the plan; it is **not counted** as one of the ten days. Plan 2–3 hours for each of Days 1–10.  
+> **Stack:** KOT, Jetpack Compose, ViewModel, StateFlow, Coroutines / Flow, and a replaceable Fake Repository.  
 > **Scope:** Build one narrow vertical slice: device discovery / connection state. Real BLE, camera, speech recognition, and AI chat are separate follow-up features, not parallel ten-day tasks.  
 > **Companion Q bank:** `smart-glasses-android-interview-questions-en.md` (prompts); Chinese guide with model answers, Swift mappings, and design rationale: `smart-glasses-android-interview-questions-cn.md`.
 
 ## Audience, Boundaries, and Definition of Done
 
-This plan is for engineers who already know Swift, iOS layering, domain modeling, and async/await. It is not a Kotlin or Android encyclopedia. Its purpose is to transfer existing engineering skill to a modern Android path.
+This plan is for engineers who already know Swift,  layering, domain modeling, and async/await. It is not a KOT or ANDR encyclopedia. Its purpose is to transfer existing engineering skill to a modern ANDR path.
 
 At the end, you should be able to:
 
 - Read common DTO mappers, domain models, sealed hierarchies, repositories, use cases, and basic coroutine / Flow code.
-- Write Kotlin business code that is null-safe, testable, and not overloaded with language tricks.
+- Write KOT business code that is null-safe, testable, and not overloaded with language tricks.
 - Deliver a runnable connection-status screen with Compose, ViewModel, and StateFlow.
 - Explain the boundaries of configuration change, process death, coroutine cancellation, Context, permissions, ANR risk, and Gradle.
-- Use iOS experience for **contrastive learning**, not mechanical API-name translation.
+- Use  experience for **contrastive learning**, not mechanical API-name translation.
 
 Do not claim to have “mastered Android” after ten days. Complex Flow composition, generics and reified types, modularization, real BLE GATT, performance, release work, and legacy View / Fragment apps require continued project experience.
 
@@ -23,16 +23,16 @@ Do not claim to have “mastered Android” after ten days. Complex Flow composi
 
 | Defer | Why |
 |---|---|
-| Full real BLE GATT integration | Needs hardware, permission matrix, and protocol work; Day 9 only designs boundaries + fakes |
+| Full real BLE GATT integration | Needs hardware, permission matrix, and protocol work; DA 9 only designs boundaries + fakes |
 | CameraX / speech / AI chat | Separate vertical slices that derail the connection-status spine |
-| Multi-module + full DI setup | Learn manual construction and fakes first; Hilt after Day 10 |
+| Multi-module + full DI setup | Learn manual construction and fakes first; Hilt after DA 10 |
 | Multi-screen Navigation / deep links | Single-screen slice is enough; recognize the concept, do not implement a stack |
 | Legacy View / XML / Fragment UI | Learn when maintaining older apps; new code is Compose-first |
 | Binder / system source / custom drawing | Interview awareness only; do not deep-dive in ten days |
 
 Each completed day has at least:
 
-1. A small compilable Kotlin / Android change;
+1. A small compilable KOT / ANDR change;
 2. One or two repeatable tests, or a specific runtime verification;
 3. One Swift comparison plus the real semantic difference;
 4. One risk or readability issue that you found and fixed.
@@ -43,50 +43,56 @@ Each completed day has at least:
 
 | Strength | Note |
 |---|---|
-| Pure Kotlin before Android | Keeps null-safety, coroutines, lifecycle, and BLE out of one debug session |
+| Pure KOT before ANDR | Keeps null-safety, coroutines, lifecycle, and BLE out of one debug session |
 | Narrow vertical slice | Realistic smart-glasses scenario with demonstrable boundaries |
 | Swift comparisons + anti-patterns | Blocks fatal myths such as `data class ≈ struct` and `suspend ≈ background thread` |
 | Acceptance criteria + AI review | Daily checkable output instead of “I read the docs” |
 
 | Common weak spots (addressed in this revision) | How |
 |---|---|
-| Day 9 overloads Flow + permissions + BLE | Split into P0 (Flow + permissions) / P1 (BLE boundary design) |
-| Missing classic Android interview concepts | Days 6/8 add Application, ANR, process; expanded Q bank |
+| DA 9 overloads Flow + permissions + BLE | Split into P0 (Flow + permissions) / P1 (BLE boundary design) |
+| Missing classic ANDR interview concepts | Days 6/8 add Application, ANR, process; expanded Q bank |
 | Vague testing stack | Days 5/8 name JUnit + coroutines-test; optional Turbine |
 | Disconnected from interview prep | Stage checkpoints map to Q-bank items |
-| Abstract package / dependency guidance | Day 6 package-structure template |
+| Abstract package / dependency guidance | DA 6 package-structure template |
 | Weak active recall | Daily output adds a 3-question oral check |
 
 ---
 
 ## Mental Models to Establish Before Migrating
 
-Do not treat Android APIs as word-for-word replacements for Swift / iOS APIs. These differences keep affecting design:
+Do not treat ANDR APIs as word-for-word replacements for Swift /  APIs. These differences keep affecting design:
 
-| Familiar Swift / iOS concept | Kotlin / Android approximation | Difference that matters |
+| Familiar Swift /  concept | KOT / ANDR approximation | Difference that matters |
 |---|---|---|
 | struct + let | data class + val | A data class is still a regular class. val fixes a property reference only, and copy() is shallow; neither supplies Swift struct value semantics. |
-| Optional | T?, ?., ?: | Both are null-safe. Kotlin also has Java platform types, so nullability must be normalized at boundaries. |
-| async / await | suspend fun, launch, async | suspend does not mean a background thread and does not start a task. Kotlin concurrency is largely library- and scope-based. |
+| Optional | T?, ?., ?: | Both are null-safe. KOT also has Java platform types, so nullability must be normalized at boundaries. |
+| async / await | suspend fun, launch, async | suspend does not mean a background thread and does not start a task. KOT concurrency is largely library- and scope-based. |
 | MainActor | Dispatchers.Main | MainActor supplies isolation semantics; the Main dispatcher primarily schedules work. They are not equivalent race-safety mechanisms. |
 | SwiftUI body | @Composable | A Composable can recompose many times. Its body should be close to pure rendering and must not start uncontrolled side effects. |
 | @State / ObservableObject | remember / rememberSaveable / ViewModel + StateFlow | Remembering, configuration change, and process death are three separate problems. |
-| View-controller lifecycle | Activity / Fragment / Compose lifecycle | Android can kill a process under memory pressure. Surviving rotation does not prove that state restoration is correct. |
+| View-controller lifecycle | Activity / Fragment / Compose lifecycle | ANDR can kill a process under memory pressure. Surviving rotation does not prove that state restoration is correct. |
 | AppDelegate / @main | Application + Activity | Application can do process-level init; screen business state still should not live in a global singleton. |
-| Main-thread block → jank | Long main-thread block → **ANR** | Android has system-level unresponsive-dialog behavior and stricter background policies. |
+| Main-thread block → jank | Long main-thread block → **ANR** | ANDR has system-level unresponsive-dialog behavior and stricter background policies. |
 
 ### Recommended package layout (from Day 6)
 
+Android Studio's default **Android** project view shows the real `app/src/main/java`
+source set as `kotlin+java`, and groups `androidTest` and `test` separately.
+The layout below is the real on-disk path. In the screenshot, create these
+subpackages under `com.honger.dayplan`.
+
 ```text
-app/src/main/java/.../
+app/src/main/java/com/honger/dayplan/
   ui/connection/     # Screen + small composables
+  ui/theme/          # Compose theme; generated by a new project
   presentation/      # ViewModel, UiState, UiEvent
   domain/            # models, repository interfaces, use cases
   data/              # Fake / real repositories, DTOs, mappers
   di/                # Optional: manual factories; Hilt later
 ```
 
-Dependency direction: **ui → presentation → domain ← data**. Domain depends on neither Android, Compose, nor Bluetooth APIs.
+Dependency direction: **ui → presentation → domain ← data**. Domain depends on neither ANDR, Compose, nor Bluetooth APIs.
 
 ---
 
@@ -99,7 +105,7 @@ Device list -> tap Connect -> Connecting -> Connected / PermissionRequired / Err
                                          -> Disconnect or retry
 ~~~
 
-Build the domain slice in pure Kotlin on Days 1–5, then move it into Android on Days 6–10. This keeps language, architecture, lifecycle, and BLE errors out of the same debugging session.
+Build the domain slice in pure KOT on Days 1–5, then move it into ANDR on Days 6–10. This keeps language, architecture, lifecycle, and BLE errors out of the same debugging session.
 
 | Time | Suggested activity |
 |---|---|
@@ -113,8 +119,8 @@ Build the domain slice in pure Kotlin on Days 1–5, then move it into Android o
 Daily output template:
 
 ~~~text
-Day X deliverable
-1. Kotlin / Android code:
+DA X deliverable
+1. KOT / ANDR code:
 2. One Swift comparison:
 3. Verification result (test or runtime note):
 4. Semantic difference discovered today:
@@ -129,11 +135,11 @@ Day X deliverable
 - `runTest` from `kotlinx-coroutines-test`
 - ViewModel tests: `MainDispatcherRule` + Fake repository
 - Optional: Turbine for Flow emission sequences
-- UI layer: use `createComposeRule` for Compose UI tests; learn Robolectric when you need the Android framework on the JVM, and instrumented tests (androidTest) for real-device interaction. Distinguish **unit tests** (fast, pure JVM) from **device tests** (slow, real environment).
+- UI layer: use `createComposeRule` for Compose UI tests; learn Robolectric when you need the ANDR framework on the JVM, and instrumented tests (androidTest) for real-device interaction. Distinguish **unit tests** (fast, pure JVM) from **device tests** (slow, real environment).
 
 ---
 
-# Day 0 (not part of the ten days): Environment Preflight, 1–2 Hours
+# DA 0 (not part of the ten days): Environment Preflight, 1–2 Hours
 
 ## Goal
 
@@ -141,7 +147,7 @@ Run a modern Compose project in an emulator and remove SDK, emulator, Gradle, an
 
 ## Tasks
 
-1. Create an **Empty Activity (Compose)** project in Android Studio and run the default screen.
+1. Create an **Empty Activity (Compose)** project in ANDR Studio and run the default screen.
 2. Locate AndroidManifest.xml, the app module build.gradle.kts, MainActivity.kt, ui/theme, res, and the version catalog if the project uses gradle/libs.versions.toml.
 3. Add a log entry in MainActivity, find it in Logcat, and learn to filter by your app process and error level.
 4. Record minSdk, targetSdk, application id, and the emulator API level. They affect permissions and hardware behavior.
@@ -149,10 +155,10 @@ Run a modern Compose project in an emulator and remove SDK, emulator, Gradle, an
 
 ## Concepts to Recognize, Not Master Yet
 
-- An Activity hosts Android UI. Start with Compose in a new app; expect to meet Fragments and Views when maintaining older projects.
+- An Activity hosts ANDR UI. Start with Compose in a new app; expect to meet Fragments and Views when maintaining older projects.
 - `Application` is the process-level entry for global init; **do not** park screen business state in a custom Application singleton.
-- Context is the entry point for Android resources, system services, and permissions. Do not retain an Activity Context, View, or Composable in a singleton, repository, or ViewModel. When Android Context must outlive a screen, application context is usually the only appropriate candidate.
-- Gradle manages builds, dependencies, Android SDK configuration, and variants. On Day 0, identify the files; do not write complex build logic.
+- Context is the entry point for ANDR resources, system services, and permissions. Do not retain an Activity Context, View, or Composable in a singleton, repository, or ViewModel. When ANDR Context must outlive a screen, application context is usually the only appropriate candidate.
+- Gradle manages builds, dependencies, ANDR SDK configuration, and variants. On DA 0, identify the files; do not write complex build logic.
 - The main thread owns UI work; heavy work or blocking I/O there causes jank and, if long enough, **ANR**.
 
 ## Acceptance
@@ -163,13 +169,13 @@ Run a modern Compose project in an emulator and remove SDK, emulator, Gradle, an
 
 ---
 
-# Stage 1: Kotlin Language and Concurrency (Days 1–5)
+# Stage 1: KOT Language and Concurrency (Days 1–5)
 
-## Day 1: Kotlin Syntax Migration and Null Safety
+## DA 1: KOT Syntax Migration and Null Safety
 
 ### Goal
 
-Map Swift Optionals correctly to Kotlin nullable types, and turn unreliable Java / network data into trustworthy domain models at the boundary.
+Map Swift Optionals correctly to KOT nullable types, and turn unreliable Java / network data into trustworthy domain models at the boundary.
 
 ### Study Focus
 
@@ -227,17 +233,17 @@ Keeping an absent battery as unknown matters: “the device did not report a bat
 
 ### Swift Comparison and Acceptance
 
-Swift can use guard let and map for the same Optional conversion. The extra Android concern is the Java platform type. Write a Swift `toDomain() -> GlassesDevice?` comparison and explain why a Kotlin boundary cannot trust type hints alone.
+Swift can use guard let and map for the same Optional conversion. The extra ANDR concern is the Java platform type. Write a Swift `toDomain() -> GlassesDevice?` comparison and explain why a KOT boundary cannot trust type hints alone.
 
 **Oral check:** (1) Is `!!` the same risk as Swift `!`? (2) What is a platform type? (3) Why is `batteryPercent = null` not 0?
 
 ---
 
-## Day 2: Modeling, Data Classes, Objects, and Extensions
+## DA 2: Modeling, Data Classes, Objects, and Extensions
 
 ### Goal
 
-Learn Kotlin modeling tools without treating a data class as a Swift struct.
+Learn KOT modeling tools without treating a data class as a Swift struct.
 
 ### Study Focus
 
@@ -300,17 +306,17 @@ The private constructor prevents callers from creating a session that starts as 
 
 ### Swift Comparison and Acceptance
 
-Swift can use a private initializer plus static func createInitial for the same invariant. The important difference is that a Swift struct normally has value semantics when assigned or passed, while a Kotlin data class copy() is explicit and shallow. Run an experiment: mutate an inner MutableList after copy() and observe both objects; then redesign so mutable collections are not exposed.
+Swift can use a private initializer plus static func createInitial for the same invariant. The important difference is that a Swift struct normally has value semantics when assigned or passed, while a KOT data class copy() is explicit and shallow. Run an experiment: mutate an inner MutableList after copy() and observe both objects; then redesign so mutable collections are not exposed.
 
 **Oral check:** (1) Core semantic gap: data class vs struct? (2) Can extensions override? (3) When may a value class box?
 
 ---
 
-## Day 3: Collections, Lambdas, and Readability
+## DA 3: Collections, Lambdas, and Readability
 
 ### Goal
 
-Become comfortable with Kotlin collection transformations while keeping business code clear before making it concise.
+Become comfortable with KOT collection transformations while keeping business code clear before making it concise.
 
 ### Study Focus
 
@@ -334,7 +340,7 @@ Use mapNotNull, groupBy, and associateBy at least once each. Write Swift map / c
 
 ---
 
-## Day 4: Sealed Hierarchies, Domain Results, and UI State
+## DA 4: Sealed Hierarchies, Domain Results, and UI State
 
 ### Goal
 
@@ -342,9 +348,9 @@ Use a closed type hierarchy for connection results and separate “what happened
 
 ### Study Focus
 
-- sealed interface / sealed class, data class, data object, and exhaustive when. data object needs Kotlin 1.9+; use object in older projects.
+- sealed interface / sealed class, data class, data object, and exhaustive when. data object needs KOT 1.9+; use object in older projects.
 - A domain result is a business fact. UI state is durable, renderable screen state. One-time navigation and toast effects should not masquerade as permanent state.
-- Kotlin has no checked-error mechanism that forces try at each call site as Swift throws does. Model expected business failures with a sealed result; reserve exceptions for exceptional boundaries.
+- KOT has no checked-error mechanism that forces try at each call site as Swift throws does. Model expected business failures with a sealed result; reserve exceptions for exceptional boundaries.
 - runCatching catches CancellationException. Turning it into an ordinary failure inside coroutine code breaks cancellation propagation.
 
 ### Exercise
@@ -385,17 +391,17 @@ Do not put a raw Throwable into long-lived UI state, and do not let UI decide lo
 
 ---
 
-## Day 5: Coroutines and the Pure Kotlin Integration Exercise
+## DA 5: Coroutines and the Pure KOT Integration Exercise
 
 ### Goal
 
-Learn to read and compose Kotlin coroutines, then build a fake device-connection domain slice without Android UI.
+Learn to read and compose KOT coroutines, then build a fake device-connection domain slice without ANDR UI.
 
-| Swift | Kotlin | Semantic point to remember |
+| Swift | KOT | Semantic point to remember |
 |---|---|---|
 | async func | suspend fun | Call from a coroutine / suspend context directly. suspend does not create work or guarantee a thread switch. |
 | async let / task-group child | async { } + Deferred.await() | async creates a Deferred; await() is only for reading its result. |
-| Task { } | launch { } | Both need a clear owner. Android user actions normally belong in viewModelScope. |
+| Task { } | launch { } | Both need a clear owner. ANDR user actions normally belong in viewModelScope. |
 | MainActor | Dispatchers.Main | The former provides actor isolation; the latter is primarily a dispatcher. They are not equivalents. |
 | task group | coroutineScope { } | Both establish and await structured children. supervisorScope lets sibling failure avoid cancelling all children automatically. |
 
@@ -444,30 +450,30 @@ class ConnectDeviceUseCase(
 - connect(deviceId) is a suspend fun;
 - use coroutineScope to fetch device details and capability configuration concurrently, then combine them;
 - simulate cancellation and verify it does not become a normal Error;
-- use runTest from kotlinx-coroutines-test to write at least one or two tests each for the Day 1 mapper and the use case.
+- use runTest from kotlinx-coroutines-test to write at least one or two tests each for the DA 1 mapper and the use case.
 
-At the end of Stage 1, explain the relationship among suspend fun, launch, and async; why a suspend call does not need .await(); and why Kotlin cancellation must be deliberately preserved.
+At the end of Stage 1, explain the relationship among suspend fun, launch, and async; why a suspend call does not need .await(); and why KOT cancellation must be deliberately preserved.
 
 ### Stage 1 checkpoint (map to Q bank)
 
-Be ready to speak about null-safety boundaries, data-class shallow copy, sealed error modeling, and suspend / structured concurrency (see Q7, Q8, and the Kotlin deep-dive: **37 data-class equality / 38 inline+reified / 40 sealed vs enum / 42 coroutine exceptions**).  
+Be ready to speak about null-safety boundaries, data-class shallow copy, sealed error modeling, and suspend / structured concurrency (see Q7, Q8, and the KOT deep-dive: **37 data-class equality / 38 inline+reified / 40 sealed vs enum / 42 coroutine exceptions**).  
 **Oral check:** (1) launch vs async? (2) Why avoid GlobalScope? (3) How is cancellation “swallowed”?
 
 ---
 
-# Stage 2: Android Platform, UI, and Hardware Boundaries (Days 6–10)
+# Stage 2: ANDR Platform, UI, and Hardware Boundaries (Days 6–10)
 
-## Day 6: Android Project Skeleton and a Static Compose Screen
+## DA 6: ANDR Project Skeleton and a Static Compose Screen
 
 ### Goal
 
-Move the pure Kotlin domain code into an Android project and build a static device list before touching Bluetooth.
+Move the pure KOT domain code into an ANDR project and build a static device list before touching Bluetooth.
 
 ### Study Focus and Exercise
 
 - Recognize MainActivity, setContent, @Composable, resources, themes, AndroidManifest.xml, the app module, and Gradle dependencies.
 - Migrate domain / data using the package layout above; UI first reads a fake list.
-- Keep dependency direction clear: UI -> ViewModel -> domain; data implements interfaces owned by domain. Domain does not depend on Android Context, Compose, or Bluetooth APIs.
+- Keep dependency direction clear: UI -> ViewModel -> domain; data implements interfaces owned by domain. Domain does not depend on ANDR Context, Compose, or Bluetooth APIs.
 - Use Context only at resource, system-service, and permission boundaries. Do not put an Activity Context or View in a ViewModel or singleton.
 - Know the responsibility split between **Application** (process) and **Activity** (screen host).
 - Write DeviceListScreen(devices, onDeviceClick) to show fake devices. UI components receive state and callbacks only.
@@ -481,7 +487,7 @@ Explain what the UI, domain, and data layers should **not** depend on. Show the 
 
 ---
 
-## Day 7: Compose State, Events, and Side Effects
+## DA 7: Compose State, Events, and Side Effects
 
 ### Goal
 
@@ -509,11 +515,11 @@ Render Idle, Connecting, Connected, PermissionRequired, and Error. Add a Connect
 
 ---
 
-## Day 8: ViewModel, StateFlow, Lifecycle, and State Restoration
+## DA 8: ViewModel, StateFlow, Lifecycle, and State Restoration
 
 ### Goal
 
-Drive the Day 7 UI with a ViewModel and distinguish configuration change, collection lifecycle, and process death.
+Drive the DA 7 UI with a ViewModel and distinguish configuration change, collection lifecycle, and process death.
 
 ### Study Focus
 
@@ -541,11 +547,11 @@ Implement DeviceViewModel exposing DeviceUiState and onConnectClicked(deviceId).
 
 ---
 
-## Day 9: Flow, Permissions, and BLE Boundaries (prioritized)
+## DA 9: Flow, Permissions, and BLE Boundaries (prioritized)
 
 ### Goal
 
-Model continuously changing data as Flow and leave Android permission / Bluetooth APIs in replaceable outer layers.  
+Model continuously changing data as Flow and leave ANDR permission / Bluetooth APIs in replaceable outer layers.  
 **Prioritize so the day is finishable:**
 
 | Priority | Content | Required? |
@@ -554,14 +560,14 @@ Model continuously changing data as Flow and leave Android permission / Bluetoot
 | P0 | PermissionRequired UI + Activity Result simulated grant result | Yes |
 | P1 | Permission matrix table (fill from minSdk / targetSdk + docs) | Prefer yes |
 | P1 | BLE adapter interface + Fake (no real GATT) | Prefer yes |
-| P2 | Physical BLE scan smoke test | Optional; Day 10+ backlog |
+| P2 | Physical BLE scan smoke test | Optional; DA 10+ backlog |
 
 ### Study Focus
 
 - Use suspend fun for a one-off operation and Flow for changing scan results, connection status, or sensor readings. StateFlow is a hot state container with a current value; do not put every one-time UI effect into it.
 - Understand cold versus hot Flow. Before stateIn, decide its scope, initial value, and SharingStarted behavior so background scanning does not continue without a consumer.
 - Learn common operators as needed: map/filter to transform; flatMapLatest to cancel the previous inner flow when a new device is chosen or a rescan starts; conflate / collectLatest to keep only the latest value under high-frequency updates so the UI does not pile up stale frames (see Q43).
-- On Android 12 (API 31) and later, common runtime permissions are BLUETOOTH_SCAN and BLUETOOTH_CONNECT; BLUETOOTH_ADVERTISE is also needed when advertising. Older Android scan rules differ and depend on target SDK. Build a permission matrix from minSdk, targetSdk, and current official documentation instead of memorizing one list.
+- On ANDR 12 (API 31) and later, common runtime permissions are BLUETOOTH_SCAN and BLUETOOTH_CONNECT; BLUETOOTH_ADVERTISE is also needed when advertising. Older ANDR scan rules differ and depend on target SDK. Build a permission matrix from minSdk, targetSdk, and current official documentation instead of memorizing one list.
 - Manifest declaration is not runtime authorization. Request permissions through the Activity Result API in the UI / lifecycle layer. The ViewModel receives the result as an event and does not own a permission launcher.
 - Real BluetoothGatt callbacks, scanning, and connections must unregister and close(). When wrapping callbacks in callbackFlow, release resources in awaitClose { ... }. An emulator cannot replace physical BLE testing.
 
@@ -580,7 +586,7 @@ Explain why declaring a Manifest permission is insufficient. List physical BLE c
 
 ---
 
-## Day 10: Runnable Vertical Slice, Tests, and Retrospective
+## DA 10: Runnable Vertical Slice, Tests, and Retrospective
 
 ### Goal
 
@@ -592,7 +598,7 @@ Deliver a small demonstrable feature with clear boundaries, not disconnected syn
 2. A DeviceRepository interface and FakeDeviceRepository. Real BLE may remain a follow-up adapter.
 3. DeviceViewModel + StateFlow + collectAsStateWithLifecycle(), plus a small SavedStateHandle restoration example.
 4. At least four repeatable tests: two mappers / use cases, one ViewModel, and one error, cancellation, or Flow scenario.
-5. A one-page migration retrospective: one real difference among Kotlin / Swift, Compose / SwiftUI, ViewModel / iOS state management, GC / ARC, and **process restoration**.
+5. A one-page migration retrospective: one real difference among KOT / Swift, Compose / SwiftUI, ViewModel /  state management, GC / ARC, and **process restoration**.
 6. A physical-device backlog: BLE, permission matrix, reconnects, persistence, protocol, performance, battery use, and release.
 7. Recommended: a **60-minute oral mock** with the interview Q bank (see suggested schedule there).
 
@@ -617,16 +623,16 @@ Focus questions: **1–12 fundamentals + 26 BLE design + 33 capstone**; if time 
 ## Daily Review Prompt
 
 ~~~text
-You are a senior Kotlin / Android code reviewer.
-The code below is a migration exercise written by a Swift / iOS engineer.
+You are a senior KOT / ANDR code reviewer.
+The code below is a migration exercise written by a Swift /  engineer.
 
 Answer in this order:
 1. Identify specific issues in null safety, data-class shallow copy, sealed when,
    coroutine scope / cancellation, Flow lifecycle, Compose side effects, Context / lifecycle, and ANR risk.
 2. Flag mechanical translations from Swift or Java, and explain the risk.
-3. Give the smallest useful changes. Do not rewrite everything just to show Kotlin syntax.
+3. Give the smallest useful changes. Do not rewrite everything just to show KOT syntax.
 4. Give the two most valuable tests.
-5. Explain one Android / Kotlin runtime behavior that I must verify myself.
+5. Explain one ANDR / KOT runtime behavior that I must verify myself.
 
 Requirements:
 <paste requirements>
@@ -643,25 +649,25 @@ Code:
 - [ ] Are domain results, renderable UI state, and one-time effects distinct?
 - [ ] Does each coroutine have an owner, and does CancellationException propagate?
 - [ ] Does Flow really represent ongoing changes, and is collection lifecycle-aware?
-- [ ] Do Context, Activity / View, permission launchers, and BluetoothGatt stay in the Android outer layer?
+- [ ] Do Context, Activity / View, permission launchers, and BluetoothGatt stay in the ANDR outer layer?
 - [ ] Does SavedStateHandle contain only small recoverable state, not a connection or large cache?
 - [ ] Do key mappers, state transitions, and error / cancellation paths have tests?
 - [ ] Did I avoid heavy work / blocking I/O on the main thread (ANR awareness)?
 
-## Priority Path After Day 10
+## Priority Path After DA 10
 
 1. **Real BLE:** scan, GATT lifecycle, callback wrappers, reconnect policy, resource release, and physical testing across devices.
 2. **Data and networking:** serialization (kotlinx.serialization / Moshi), HTTP client (OkHttp / Ktor), Room / DataStore, offline and caching strategy.
-3. **Android engineering:** version catalogs, build variants, Hilt DI, modularization, CI, performance / battery / crash monitoring.
+3. **ANDR engineering:** version catalogs, build variants, Hilt DI, modularization, CI, performance / battery / crash monitoring.
 4. **UI completeness:** Navigation, deep links, accessibility, Compose UI tests; learn View / Fragment / RecyclerView when maintaining older apps.
 5. **Concurrency depth:** Flow tests, sharing policy, supervision, thread and resource-leak diagnosis.
-6. **Interview drill:** work through `smart-glasses-android-interview-questions-cn.md` (or EN prompts) weekly—five oral answers. Drill the Kotlin deep-dive **37–43** (equality, inline/reified, delegation, sealed, generics, coroutine exceptions, Flow operators) and the runtime classics **44/45** (View rendering, image memory).
+6. **Interview drill:** work through `smart-glasses-android-interview-questions-cn.md` (or EN prompts) weekly—five oral answers. Drill the KOT deep-dive **37–43** (equality, inline/reified, delegation, sealed, generics, coroutine exceptions, Flow operators) and the runtime classics **44/45** (View rendering, image memory).
 
 ## Official References to Prefer
 
-- [Kotlin Null Safety](https://kotlinlang.org/docs/null-safety.html)
-- [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
-- [Android app architecture](https://developer.android.com/topic/architecture)
+- [KOT Null Safety](https://kotlinlang.org/docs/null-safety.html)
+- [KOT Coroutines](https://kotlinlang.org/docs/coroutines-overview.html)
+- [ANDR app architecture](https://developer.android.com/topic/architecture)
 - [Compose state](https://developer.android.com/develop/ui/compose/state)
 - [ViewModel overview](https://developer.android.com/topic/libraries/architecture/viewmodel)
 - [Save UI states](https://developer.android.com/topic/libraries/architecture/saving-states)
